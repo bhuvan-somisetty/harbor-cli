@@ -85,8 +85,8 @@ func UpdateLableCommand() *cobra.Command {
 			// so the command can be used non-interactively (scripts, CI).
 			if !applyLabelUpdateFlags(cmd.Flags(), opts, updateView) {
 				update.UpdateLabelView(updateView)
-			} else if updateView.Name == "" {
-				return fmt.Errorf("label name cannot be empty")
+			} else if err := validateLabelUpdate(updateView); err != nil {
+				return err
 			}
 			err = api.UpdateLabel(updateView, labelId)
 			if err != nil {
@@ -123,4 +123,16 @@ func applyLabelUpdateFlags(flags *pflag.FlagSet, opts *models.Label, updateView 
 		changed = true
 	}
 	return changed
+}
+
+// validateLabelUpdate enforces the same rules as the interactive form for
+// values supplied through flags.
+func validateLabelUpdate(updateView *models.Label) error {
+	if updateView.Name == "" {
+		return fmt.Errorf("label name cannot be empty")
+	}
+	if updateView.Color == "" {
+		return fmt.Errorf("label color cannot be empty")
+	}
+	return nil
 }

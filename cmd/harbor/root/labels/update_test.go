@@ -101,3 +101,27 @@ func TestApplyLabelUpdateFlags(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateLabelUpdate(t *testing.T) {
+	tests := []struct {
+		name    string
+		label   models.Label
+		wantErr string
+	}{
+		{"valid", models.Label{Name: "demo", Color: "#C92100"}, ""},
+		{"empty description is allowed", models.Label{Name: "demo", Color: "#C92100", Description: ""}, ""},
+		{"empty name", models.Label{Name: "", Color: "#C92100"}, "label name cannot be empty"},
+		{"empty color", models.Label{Name: "demo", Color: ""}, "label color cannot be empty"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateLabelUpdate(&tt.label)
+			if tt.wantErr == "" {
+				assert.NoError(t, err)
+				return
+			}
+			assert.EqualError(t, err, tt.wantErr)
+		})
+	}
+}
